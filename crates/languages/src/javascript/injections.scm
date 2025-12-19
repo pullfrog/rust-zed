@@ -126,3 +126,36 @@
   (#match? @_ecma_comment "^\\/\\*\\s*(css)\\s*\\*\\/")
   (#set! injection.language "css")
 )
+
+; ArkType function calls - highlight string/template arguments as TypeScript
+(call_expression
+  function: (identifier) @_name
+  (#match? @_name "^(type|generic|scope|define|match|fn|module|[aA]rk[a-zA-Z]*)$")
+  arguments: (arguments [
+    (string (string_fragment) @injection.content)
+    (template_string (string_fragment) @injection.content)
+  ])
+  (#set! injection.language "typescript")
+)
+
+; ArkType chained method calls
+(call_expression
+  function: (member_expression
+    property: (property_identifier) @_method
+    (#match? @_method "^(and|or|case|in|extends|ifExtends|intersect|merge|exclude|extract|overlaps|subsumes|to|satisfies)$"))
+  arguments: (arguments [
+    (string (string_fragment) @injection.content)
+    (template_string (string_fragment) @injection.content)
+  ])
+  (#set! injection.language "typescript")
+)
+
+; ArkType regex function - highlight as regex
+(call_expression
+  function: (identifier) @_name (#eq? @_name "regex")
+  arguments: (arguments [
+    (string (string_fragment) @injection.content)
+    (template_string (string_fragment) @injection.content)
+  ])
+  (#set! injection.language "regex")
+)
